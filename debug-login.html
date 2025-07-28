@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug Login - AI Chat</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #1a1a1a;
+            color: white;
+            padding: 50px;
+            max-width: 400px;
+            margin: 0 auto;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        input {
+            width: 100%;
+            padding: 10px;
+            background: #333;
+            border: 1px solid #555;
+            color: white;
+            border-radius: 5px;
+        }
+        button {
+            background: #10a37f;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            width: 100%;
+        }
+        .debug-info {
+            background: #333;
+            padding: 15px;
+            margin-top: 20px;
+            border-radius: 5px;
+            font-family: monospace;
+            font-size: 12px;
+        }
+        .error {
+            background: #500;
+            color: #ff6666;
+        }
+        .success {
+            background: #050;
+            color: #66ff66;
+        }
+    </style>
+</head>
+<body>
+    <h1>Debug Login</h1>
+    
+    <form id="debugForm">
+        <div class="form-group">
+            <label for="username">Username:</label>
+            <input type="text" id="username" value="admin">
+        </div>
+        <div class="form-group">
+            <label for="password">Password:</label>
+            <input type="password" id="password" value="admin123">
+        </div>
+        <button type="submit">Test Login</button>
+    </form>
+    
+    <div id="debugInfo" class="debug-info">
+        Ready to test...
+    </div>
+    
+    <script>
+        class DebugAuth {
+            constructor() {
+                this.users = this.loadUsers();
+                this.initDefaultUsers();
+                console.log('Debug: Users loaded:', this.users);
+            }
+            
+            loadUsers() {
+                const stored = localStorage.getItem('godforever_users');
+                console.log('Debug: Raw localStorage data:', stored);
+                return stored ? JSON.parse(stored) : {};
+            }
+            
+            saveUsers() {
+                localStorage.setItem('godforever_users', JSON.stringify(this.users));
+                console.log('Debug: Users saved to localStorage');
+            }
+            
+            initDefaultUsers() {
+                console.log('Debug: Current users count:', Object.keys(this.users).length);
+                if (Object.keys(this.users).length === 0) {
+                    console.log('Debug: Creating default users...');
+                    this.users = {
+                        'admin': {
+                            password: 'admin123',
+                            email: 'admin@godforever.ai',
+                            role: 'administrator',
+                            permissions: ['full_access', 'api_management', 'user_management']
+                        },
+                        'demo': {
+                            password: 'demo123',
+                            email: 'demo@godforever.ai',
+                            role: 'user',
+                            permissions: ['chat_access']
+                        }
+                    };
+                    this.saveUsers();
+                    console.log('Debug: Default users created and saved');
+                } else {
+                    console.log('Debug: Users already exist:', Object.keys(this.users));
+                }
+            }
+            
+            authenticateUser(username, password) {
+                console.log('Debug: Attempting authentication for:', username);
+                console.log('Debug: Available users:', Object.keys(this.users));
+                
+                const user = this.users[username];
+                console.log('Debug: Found user:', user ? 'YES' : 'NO');
+                
+                if (!user) {
+                    return {
+                        success: false,
+                        message: 'User not found'
+                    };
+                }
+                
+                console.log('Debug: Checking password. Expected:', user.password, 'Provided:', password);
+                if (user.password !== password) {
+                    return {
+                        success: false,
+                        message: 'Invalid password'
+                    };
+                }
+                
+                return {
+                    success: true,
+                    user: user
+                };
+            }
+        }
+        
+        const debugAuth = new DebugAuth();
+        
+        document.getElementById('debugForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const debugInfo = document.getElementById('debugInfo');
+            
+            console.log('Debug: Form submitted with:', username, password);
+            
+            const result = debugAuth.authenticateUser(username, password);
+            
+            if (result.success) {
+                debugInfo.className = 'debug-info success';
+                debugInfo.innerHTML = `
+                    <strong>SUCCESS!</strong><br>
+                    Username: ${username}<br>
+                    Role: ${result.user.role}<br>
+                    Email: ${result.user.email}<br>
+                    Permissions: ${result.user.permissions.join(', ')}
+                `;
+            } else {
+                debugInfo.className = 'debug-info error';
+                debugInfo.innerHTML = `
+                    <strong>FAILED!</strong><br>
+                    Error: ${result.message}<br>
+                    Username: ${username}<br>
+                    Available users: ${Object.keys(debugAuth.users).join(', ')}
+                `;
+            }
+        });
+        
+        // Test localStorage
+        console.log('Debug: Testing localStorage...');
+        localStorage.setItem('test', 'working');
+        console.log('Debug: localStorage test:', localStorage.getItem('test'));
+    </script>
+</body>
+</html> 
